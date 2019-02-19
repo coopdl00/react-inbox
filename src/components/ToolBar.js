@@ -11,7 +11,15 @@ class ToolBar extends Component {
             unread messages
           </p>
 
-          <button className="btn btn-default" onClick={this.props.console}>
+          <button className="btn btn-danger" onClick={() => {this.props.toggleComposing()}}>
+            <i className="fa fa-plus"></i>
+          </button>
+
+          <button className="btn btn-default" onClick={
+            this.props.allselected ?
+            this.props.deselectAll :
+            this.props.selectAll
+          }>
             <i className="fa fa-square-o"></i>
           </button>
 
@@ -37,7 +45,7 @@ class ToolBar extends Component {
             <option value="gschool">gschool</option>
           </select>
 
-          <button className="btn btn-default" disabled="disabled">
+          <button className="btn btn-default" disabled="disabled"  onClick={this.props.delete}>
             <i className="fa fa-trash-o"></i>
           </button>
         </div>
