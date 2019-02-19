@@ -90,15 +90,9 @@ class App extends Component {
   }
 
   toggleComposing = () => {
-    if (this.state.composing) {
-      this.setState({
-        composing: false
-      })
-    } else {
-      this.setState({
-        composing: true
-      })
-    }
+    this.setState({
+      composing: !this.state.composing
+    })
   }
 
   handlePost = async(e) => {
@@ -121,15 +115,16 @@ class App extends Component {
     })
     let response = await fetch(`${API}/messages`)
     const messages = await response.json()
-    let newState = {messages:[...messages]}
+    this.setState({
+      messages: [...messages]
+    })
     this.toggleComposing()
-    this.setState(newState)
   }
 
   expand = (e,id) =>{
     e.preventDefault()
     this.props.read(id)
-    this.setState({expanded: (this.state.expanded ? false : true)})
+    this.setState({expanded: !this.state.expanded})
   }
 
   read = async(id) => {
