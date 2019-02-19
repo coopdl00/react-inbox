@@ -15,7 +15,17 @@ class Message extends Component {
   render() {
     return (
       <div>
-        <div className={this.props.message.selected ? (this.props.message.read ? "row message read selected" : "row message unread selected" ): (this.props.message.read ? "row message read unselected" : "row message unread unselected")}>
+        <div className={
+          this.props.message.selected ?
+            (this.props.message.read ?
+              "row message read selected"
+              :
+              "row message unread selected" )
+            :
+            (this.props.message.read ?
+                "row message read unselected"
+                :
+                "row message unread unselected")}>
           <div className="col-xs-1">
             <div className="row">
               <div className="col-xs-2">

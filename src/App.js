@@ -105,7 +105,6 @@ class App extends Component {
         body: e.target.body.value,
         read: false,
         starred: false,
-        selected: false,
         labels: [],
       }),
       headers:{
@@ -114,9 +113,10 @@ class App extends Component {
       }
     })
     let response = await fetch(`${API}/messages`)
-    const messages = await response.json()
+    const newState = await response.json()
+    newState.forEach(message => message.selected = false)
     this.setState({
-      messages: [...messages]
+      messages: [...newState]
     })
     this.toggleComposing()
   }
