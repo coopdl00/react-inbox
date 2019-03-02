@@ -1,21 +1,29 @@
 import React, { Component } from 'react';
-import ToolBar from './components/ToolBar.js'
-import MessageList from './components/MessageList.js'
-import Compose from './components/Compose.js'
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import MessageList from './component/MessageList';
+import ToolBar from './component/ToolBar';
+import Compose from './component/Compose';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap-theme.css';
+import 'font-awesome/css/font-awesome.css';
 import './App.css';
 
-let API = 'https://collective-api-coopdl00.herokuapp.com/api'
+const API = 'https://collective-api-coopdl00.herokuapp.com/'
 
 class App extends Component {
-  state = {
-    composing: false,
-    allselected: false,
-    checked: false,
-    selectedMessages: []
+  state = {}
+
+  componentDidMount = async() => {
+    const response = await fetch(`${API}api/messages`)
+    const messages = await response.json()
+    let newState = {messages:[...messages]}
+    newState.messages.forEach(message => message.selected = false)
+    newState.isComposing = false
+    this.setState(newState)
   }
 
   updateMessage = async(data) => {
-    await fetch(`${API}/messages`,{
+    await fetch(`${API}api/messages`,{
       method: 'PATCH',
       body: JSON.stringify(data),
       headers:{
@@ -23,88 +31,25 @@ class App extends Component {
         'Accept': 'application/json',
       }
     })
-    let response = await fetch(`${API}/messages`)
+    let response = await fetch(`${API}api/messages`)
     const messages = await response.json()
-    let newState = {
-      messages:[...messages]
-    }
-    newState.messages = newState.messages.map(message => {
-      const m = {...message}; m.selected = false; return m
-    })
+    let newState = {messages:[...messages]}
+    newState.messages = newState.messages.map(message => {const m = {...message}; m.selected = false; return m})
     this.setState(newState)
   }
 
-  componentDidMount = async() => {
-    const response = await fetch(`${API}/messages`)
-    const messages = await response.json()
-    let newState = {
-      messages: [...messages]
-    }
-    console.log(newState)
-    newState.messages.forEach(message => message.selected = false)
-    this.setState(newState)
-  }
 
-  delete = async() => {
-    let selected = this.state.messages.filter(message => message.selected)
-    let idToDelete = selected.map(message => message.id)
-    const response = await fetch(`${API}/messages`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        messageIds: [...idToDelete],
-        command: 'delete',
-      }),
-      headers:{
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      }
-    })
-    const message = await response.json()
-    let newState = {
-      messages: [...message]
-    }
-    newState.messages.forEach(message => message['selected'] = false)
-    console.log(message)
-    this.setState(newState)
-  }
-
-  select = (e, id) => {
-    let newMessages = [...this.state.messages]
-    const idx = newMessages.findIndex(message => message.id === id)
-    newMessages[idx]['selected'] = e.target.checked
-    this.setState({
-      messages: newMessages
-    })
-  }
-
-  starred = async(id) => {
-    let newMessages = [...this.state.messages]
-    const idx = newMessages.findIndex(message => message.id === id)
-    let isStarred = newMessages[idx]['starred'] || false
-    isStarred ? newMessages[idx]['starred'] = false : newMessages[idx]['starred'] = true
-    await this.updateMessage({
-      messageIds: [id],
-      command: 'star',
-      star: !isStarred
-    })
-  }
-
-  toggleComposing = () => {
-    this.setState({
-      composing: !this.state.composing
-    })
-  }
-
-  handlePost = async(e) => {
+  handleSubmit = async(e) => {
     e.preventDefault()
     if(!e.target.subject.value || !e.target.body.value){ return }
-    await fetch(`${API}/messages`,{
+    await fetch(`${API}api/messages`,{
       method: 'POST',
       body: JSON.stringify({
         subject: e.target.subject.value,
         body: e.target.body.value,
         read: false,
         starred: false,
+        selected: false,
         labels: [],
       }),
       headers:{
@@ -112,19 +57,63 @@ class App extends Component {
         'Accept': 'application/json',
       }
     })
-    let response = await fetch(`${API}/messages`)
-    const newState = await response.json()
-    newState.forEach(message => message.selected = false)
-    this.setState({
-      messages: [...newState]
-    })
-    this.toggleComposing()
+    let response = await fetch(`${API}api/messages`)
+    const messages = await response.json()
+    let newState = {messages:[...messages]}
+    newState.isComposing = false
+    this.setState(newState)
   }
 
-  expand = (e,id) =>{
-    e.preventDefault()
-    this.props.read(id)
-    this.setState({expanded: !this.state.expanded})
+  handleDelete = async() => {
+    const selected = this.state.messages.filter(message=> message.selected)
+    const messageIds = selected.map(message=>message.id)
+    const response = await fetch(`${API}api/messages`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            messageIds: [...messageIds],
+            command: 'delete',
+          }),
+          headers:{
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        })
+    const messages = await response.json()
+    let newState = {messages:[...messages]}
+    newState.messages.forEach(message => message['selected'] = false)
+    this.setState(newState)
+  }
+
+  select = (e, id) => {
+    let newMessages = [...this.state.messages]
+    const idx = newMessages.findIndex(message => message.id === id)
+    newMessages[idx]['selected'] = e.target.checked
+    this.setState({messages: newMessages})
+  }
+
+  selectAll = () => {
+    let newMessages = [...this.state.messages]
+    newMessages.forEach(message => message['selected'] = true)
+    this.setState({messages: newMessages})
+  }
+
+  unSelectAll = () => {
+    let newMessages = [...this.state.messages]
+    newMessages.forEach(message => message['selected'] = false)
+    this.setState({messages: newMessages})
+  }
+
+  starred = async(id) => {
+    let newMessages = [...this.state.messages]
+    const idx = newMessages.findIndex(message => message.id === id)
+    let isStarred = newMessages[idx]['starred'] || false
+    isStarred? newMessages[idx]['starred'] = false : newMessages[idx]['starred'] = true
+    await this.updateMessage({
+      messageIds: [id],
+      command: 'star',
+      star: !isStarred
+    })
   }
 
   read = async(id) => {
@@ -138,62 +127,87 @@ class App extends Component {
     })
   }
 
-  deselectAll = () => {
-    let newMessages = this.state.messages
-    newMessages.forEach(message => message['selected'] = false)
-    this.setState({
-      messages: newMessages,
-      allselected: false,
-      selectedMessages: []
-    })
-    this.toggleAllChecked()
+  readSelected = () =>{
+    this.state.messages.filter(message=> message.selected)
+                       .forEach(async message=>{
+                         let newMessages = [...this.state.messages]
+                         const idx = newMessages.findIndex(m => m.id === message.id)
+                         newMessages[idx]['read'] = true
+                         await this.updateMessage({
+                           messageIds: [message.id],
+                           command: 'read',
+                           read: true
+                         })
+                       })
   }
 
-  selectAll = () => {
-    let newMessages = this.state.messages
-    newMessages.forEach(message => message['selected'] = true)
-    this.setState({
-      messages: newMessages,
-      allselected: true,
-      selectedMessages: [...newMessages]
-    })
-    this.toggleAllChecked()
+  unReadSelected = () =>{
+    this.state.messages.filter(message=> message.selected)
+                       .forEach( message=>{
+                         let newMessages = [...this.state.messages]
+                         const idx = newMessages.findIndex(m => m.id === message.id)
+                         newMessages[idx]['read'] = false
+                         this.updateMessage({
+                           messageIds: [message.id],
+                           command: 'read',
+                           read: false
+                         })
+                       })
   }
 
-  toggleAllChecked = () => {
-    this.setState({
-      checked: !this.state.checked
-    })
+  applyLabel = (e) =>{
+      this.state.messages.filter(message=> message.selected)
+                         .forEach(async message=>{
+                           let newMessages = [...this.state.messages]
+                           const idx = newMessages.findIndex(m => m.id === message.id)
+                           let labels = newMessages[idx]['labels']
+                           if (!labels.includes(e.target.value)){
+                             await this.updateMessage({
+                               messageIds: [message.id],
+                               command: 'addLabel',
+                               label: e.target.value
+                             })
+                           }
+                         })
   }
+
+  removeLabel = (e) =>{
+      this.state.messages.filter(message=> message.selected)
+                         .forEach(async message=>{
+                           let newMessages = [...this.state.messages]
+                           const idx = newMessages.findIndex(m => m.id === message.id)
+                           let labels = newMessages[idx]['labels']
+                           if (labels.includes(e.target.value)){
+                             await this.updateMessage({
+                               messageIds: [message.id],
+                               command: 'removeLabel',
+                               label: e.target.value
+                             })
+                           }
+                         })
+  }
+
+  toggleComposer = () => {
+    let composerToggle = !this.state.isComposing
+    this.setState({isComposing: composerToggle})
+  }
+
 
   render() {
     return (
-      <div className="App">
-        <h1 className="text-center">Cooper's Bootleg gmail :D</h1>
-        <div className="container">
-          <ToolBar
-            allselected={this.state.allselected}
-            deselectAll={this.deselectAll}
-            selectAll={this.selectAll}
-            toggleComposing={this.toggleComposing}
-            messages={this.messages}
-            delete={this.delete}
-          />
-          {this.state.composing ?
-            <Compose
-              toggleComposing={this.toggleComposing}
-              handlePost={this.handlePost}
-            />
-              :
-            <MessageList
-              read={this.read}
-              starred={this.starred}
-              select={this.select}
-              messages={this.state.messages}
-              checked={this.state.checked}
-            />}
+      <Router>
+        <div>
+          <div className="container">
+            <h1>Cooper's Bootleg Gmail</h1>
+            <ToolBar toggleComposer={this.toggleComposer} isComposing={this.state.isComposing} messages={this.state.messages} unReadAll={this.unReadSelected} readAll={this.readSelected} selectAll={this.selectAll} unSelectAll={this.unSelectAll} applyLabel={this.applyLabel} removeLabel={this.removeLabel} handleDelete={this.handleDelete}/>
+              <Route path="/composer" render={()=> (<Compose isComposing={this.state.isComposing} handleSubmit={this.handleSubmit}/>) }/>
+              <Switch>
+                <Route path="/messages" render={()=> (<MessageList isComposing={this.state.isComposing} messages={this.state.messages} select={this.select} read={this.read} starred={this.starred}/>)}/>
+                <Route exact path="/" render={()=> (<MessageList isComposing={this.state.isComposing} messages={this.state.messages} select={this.select} read={this.read} starred={this.starred}/>)}/>
+              </Switch>
+          </div>
         </div>
-      </div>
+      </Router>
     );
   }
 }
