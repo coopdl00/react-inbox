@@ -128,63 +128,59 @@ class App extends Component {
   }
 
   readSelected = () =>{
-    this.state.messages.filter(message=> message.selected)
-                       .forEach(async message=>{
-                         let newMessages = [...this.state.messages]
-                         const idx = newMessages.findIndex(m => m.id === message.id)
-                         newMessages[idx]['read'] = true
-                         await this.updateMessage({
-                           messageIds: [message.id],
-                           command: 'read',
-                           read: true
-                         })
-                       })
+    this.state.messages.filter(message=> message.selected).forEach(async message=>{
+      let newMessages = [...this.state.messages]
+      const idx = newMessages.findIndex(m => m.id === message.id)
+      newMessages[idx]['read'] = true
+      await this.updateMessage({
+        messageIds: [message.id],
+        command: 'read',
+        read: true
+      })
+    })
   }
 
   unReadSelected = () =>{
-    this.state.messages.filter(message=> message.selected)
-                       .forEach( message=>{
-                         let newMessages = [...this.state.messages]
-                         const idx = newMessages.findIndex(m => m.id === message.id)
-                         newMessages[idx]['read'] = false
-                         this.updateMessage({
-                           messageIds: [message.id],
-                           command: 'read',
-                           read: false
-                         })
-                       })
+    this.state.messages.filter(message=> message.selected).forEach( message=>{
+      let newMessages = [...this.state.messages]
+      const idx = newMessages.findIndex(m => m.id === message.id)
+      newMessages[idx]['read'] = false
+      this.updateMessage({
+        messageIds: [message.id],
+        command: 'read',
+        read: false
+      })
+    })
   }
 
   applyLabel = (e) =>{
-      this.state.messages.filter(message=> message.selected)
-                         .forEach(async message=>{
-                           let newMessages = [...this.state.messages]
-                           const idx = newMessages.findIndex(m => m.id === message.id)
-                           let labels = newMessages[idx]['labels']
-                           if (!labels.includes(e.target.value)){
-                             await this.updateMessage({
-                               messageIds: [message.id],
-                               command: 'addLabel',
-                               label: e.target.value
-                             })
-                           }
-                         })
+    this.state.messages.filter(message=> message.selected).forEach(async message=>{
+      let newMessages = [...this.state.messages]
+      const idx = newMessages.findIndex(m => m.id === message.id)
+      let labels = newMessages[idx]['labels']
+      if (!labels.includes(e.target.value)){
+        await this.updateMessage({
+          messageIds: [message.id],
+          command: 'addLabel',
+          label: e.target.value
+        })
+      }
+    })
   }
 
   removeLabel = (e) =>{
-      this.state.messages.filter(message=> message.selected)
-                         .forEach(async message=>{
-                           let newMessages = [...this.state.messages]
-                           const idx = newMessages.findIndex(m => m.id === message.id)
-                           let labels = newMessages[idx]['labels']
-                           if (labels.includes(e.target.value)){
-                             await this.updateMessage({
-                               messageIds: [message.id],
-                               command: 'removeLabel',
-                               label: e.target.value
-                             })
-                           }
-                         })
+    this.state.messages.filter(message=> message.selected).forEach(async message=>{
+      let newMessages = [...this.state.messages]
+      const idx = newMessages.findIndex(m => m.id === message.id)
+      let labels = newMessages[idx]['labels']
+      if (labels.includes(e.target.value)){
+        await this.updateMessage({
+          messageIds: [message.id],
+          command: 'removeLabel',
+          label: e.target.value
+        })
+      }
+    })
   }
 
   toggleComposer = () => {

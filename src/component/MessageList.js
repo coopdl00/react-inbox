@@ -6,7 +6,14 @@ class Messages extends Component {
     return (
       <React.Fragment>
       <div>
-        {this.props.messages? this.props.messages.map(message=><Message message={message} read={this.props.read} select={this.props.select} key={message.id} starred={this.props.starred}/>):""}
+        {this.props.messages? this.props.messages.map(message=>
+          <Message
+            message={message}
+            read={this.props.read}
+            select={this.props.select}
+            key={message.id}
+            starred={this.props.starred}
+          />):""}
       </div>
       </React.Fragment>
     );

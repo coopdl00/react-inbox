@@ -29,11 +29,9 @@ class Composer extends Component {
           </div>
           <div className="form-group">
             <div className="col-sm-8 col-sm-offset-2">
-
-                <button to="messages" type="submit" value="Send" className="btn btn-primary">
-                    Send Message
-                </button>
-
+              <button to="messages" type="submit" value="Send" className="btn btn-primary">
+                  Send Message
+              </button>
             </div>
           </div>
         </form>
